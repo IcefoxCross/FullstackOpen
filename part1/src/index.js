@@ -1,8 +1,9 @@
-/* jshint esversion: 6 */
+/* jshint esversion: 9 */
 import React, {useState} from 'react';
 import ReactDOM from 'react-dom';
 
-/*const Hello = ({name, age}) => {
+/* Part 1 a-b
+const Hello = ({name, age}) => {
     const bornYear = () => new Date().getFullYear() - age;
     
     return (
@@ -25,8 +26,10 @@ const App = () => {
     )
 }
 
-ReactDOM.render(<App />, document.getElementById('root'));*/
+ReactDOM.render(<App />, document.getElementById('root'));
+*/
 
+/* Part 1c
 const Display = ({counter}) => <div>{counter}</div>
 
 const Button = ({onClick, text}) => (
@@ -62,3 +65,51 @@ let counter = 1
 ReactDOM.render(
     <App counter={counter} />,
     document.getElementById('root'));
+*/
+
+const History = (props) => {
+    if (props.allClicks.length === 0){
+        return (
+            <div>the app is used by pressing the buttons</div>
+        )
+    }
+
+    return (
+        <div>
+            button press history: {props.allClicks.join(' ')}
+        </div>
+    )
+}
+
+const Button = ({onClick, text}) => (
+    <button onClick={onClick}>{text}</button>
+)
+
+const App = () => {
+    const [left, setLeft] = useState(0);
+    const [right, setRight] = useState(0);
+    const [allClicks, setAll] = useState([]);
+
+    const handleLeftClick = () => {
+        setAll(allClicks.concat('L'));
+        setLeft(left+1);
+    }
+    const handleRightClick = () => {
+        setAll(allClicks.concat('R'));
+        setRight(right+1);
+    }
+
+    return (
+        <div>
+            <div>
+                {left}
+                <Button onClick={handleLeftClick} text='left' />
+                <Button onClick={handleRightClick} text='right' />
+                {right}
+                <History allClicks={allClicks} />
+            </div>
+        </div>
+    )
+}
+
+ReactDOM.render(<App />, document.getElementById('root'));
