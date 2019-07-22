@@ -1,9 +1,9 @@
 /* jshint esversion: 9 */
 import React, {useState,useEffect} from 'react';
-import axios from 'axios';
 import Filter from './Filter';
 import PersonForm from './PersonForm';
 import Persons from './Persons';
+import personService from '../services/persons';
 
 const App = () => {
     const [persons, setPersons] = useState([]);
@@ -13,12 +13,12 @@ const App = () => {
     const [searchName, setSearchName] = useState('');
 
     useEffect(() => {
-        axios
-            .get('http://localhost:3001/persons')
-            .then(response => {
-                setPersons(response.data);
+        personService
+            .getAll()
+            .then(initialPersons => {
+                setPersons(initialPersons);
             });
-    },[]);
+    }, []);
 
     const personsToShow = (searchName === '')
         ? persons
@@ -26,19 +26,48 @@ const App = () => {
 
     const addPerson = (event) => {
         event.preventDefault();
+        const personObject = {
+            name: newName,
+            number: newNumber
+        }
 
         if (!persons.find((person) => person.name === newName)) {
-            const personObject = {
-                name: newName,
-                number: newNumber
-            }
-            setPersons(persons.concat(personObject));
-            setNewName('');
-            setNewNumber('');
+            personService
+                .create(personObject)
+                .then(returnedPerson => {
+                    setPersons(persons.concat(returnedPerson));
+                    setNewName('');
+                    setNewNumber('');
+                });
         }
         else {
-            window.alert(`${newName} is already added to phonebook`);
+            updatePerson(persons.find((person) => person.name === newName).id, personObject.number);
         }
+    }
+
+    const updatePerson = (id, number) => {
+        const person = persons.find(n => n.id === id)
+        const changedPerson = {...person, number: number}
+
+        if (window.confirm(`${changedPerson.name} is already added to phonebook, replace the old number with a new one?`)) {
+            const id = changedPerson.id;
+            personService
+                .update(id, changedPerson)
+                .then(returnedPerson => {
+                    setPersons(persons.map(person => person.id !== id ? person : returnedPerson))
+                });
+        };
+    }
+
+    const deletePerson = name => {
+        const person = persons.find((person) => person.name === name);
+        if (window.confirm(`Delete ${name}?`)) {
+            personService
+                .erase(person.id)
+                .then(result => {
+                    setPersons(persons.filter(p => p.id !== person.id))
+                });
+        };
     }
 
     const handleNewNameChange = (event) => {
@@ -61,7 +90,7 @@ const App = () => {
             <PersonForm addPerson={addPerson} newName={newName} handleNewNameChange={handleNewNameChange}
                 newNumber={newNumber} handleNewNumberChange={handleNewNumberChange} />
             <h3>Numbers</h3>
-            <Persons personsToShow={personsToShow} />
+            <Persons personsToShow={personsToShow} deletePerson={deletePerson}/>
         </div>
     )
 }
