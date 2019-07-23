@@ -4,6 +4,7 @@ import Filter from './Filter';
 import PersonForm from './PersonForm';
 import Persons from './Persons';
 import personService from '../services/persons';
+import Notification from './Notification';
 
 const App = () => {
     const [persons, setPersons] = useState([]);
@@ -11,6 +12,8 @@ const App = () => {
     const [newName, setNewName] = useState('');
     const [newNumber, setNewNumber] = useState('');
     const [searchName, setSearchName] = useState('');
+    const [notifMessage, setNotifMessage] = useState('');
+    const [notifType, setNotifType] = useState('');
 
     useEffect(() => {
         personService
@@ -35,6 +38,11 @@ const App = () => {
             personService
                 .create(personObject)
                 .then(returnedPerson => {
+                    setNotifMessage(`Added ${returnedPerson.name}`);
+                    setNotifType('success');
+                    setTimeout(() => {
+                        setNotifMessage(null);
+                    }, 5000);
                     setPersons(persons.concat(returnedPerson));
                     setNewName('');
                     setNewNumber('');
@@ -54,8 +62,21 @@ const App = () => {
             personService
                 .update(id, changedPerson)
                 .then(returnedPerson => {
+                    setNotifMessage(`Updated ${returnedPerson.name}`);
+                    setNotifType('success');
+                    setTimeout(() => {
+                        setNotifMessage(null);
+                    }, 5000);
                     setPersons(persons.map(person => person.id !== id ? person : returnedPerson))
-                });
+                })
+                .catch(error => {
+                    setNotifMessage(`Information of '${person.name}' has already been removed from server`);
+                    setNotifType('error');
+                    setTimeout(() => {
+                        setNotifMessage(null);
+                    }, 5000);
+                    setPersons(persons.filter(p => p.id !== person.id))
+                })
         };
     }
 
@@ -85,6 +106,7 @@ const App = () => {
     return (
         <div>
             <h2>Phonebook</h2>
+            <Notification message={notifMessage} type={notifType} />
             <Filter value={searchName} onChange={handleSearchNameChange} />
             <h3>Add a new</h3>
             <PersonForm addPerson={addPerson} newName={newName} handleNewNameChange={handleNewNameChange}
