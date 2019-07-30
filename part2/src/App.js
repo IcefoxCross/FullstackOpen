@@ -10,7 +10,7 @@ const App = () => {
     const [notes, setNotes] = useState([]);
     const [newNote, setNewNote] = useState('a new note...');
     const [showAll, setShowAll] = useState(true);
-    const [errorMessage, setErrorMessage] = useState('some error happened...');
+    const [errorMessage, setErrorMessage] = useState(null);
 
     useEffect(() => {
         noteService
@@ -25,7 +25,7 @@ const App = () => {
         : notes.filter(note => note.important);
     
     const toggleImportanceOf = id => {
-        const url = `http://localhost:3001/notes/${id}`
+        const url = `https://limitless-garden-82080.herokuapp.com/notes/${id}`
         const note = notes.find(n => n.id === id)
         const changedNote = {...note, important: !note.important}
 
